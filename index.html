@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Countdown: Verbleibende Tage der Trump-Administration</title>
+  <meta name="description" content="Live-Countdown bis 20. Jan 2029, 12:00 ET (18:00 MEZ): Tage, Stunden, Minuten, Sekunden." />
+  <style>
+    /* ==== Design zum Anpassen ==== */
+    :root{
+      --bg: #0b1220;
+      --fg: #e6e9ef;
+      --muted: #b8c0cc;
+      --accent: #7dd3fc;   /* Akzentfarbe für Doppelpunkte/Labels */
+      --card: rgba(255,255,255,.06);
+      --card-border: rgba(255,255,255,.08);
+      --radius: 20px;
+    }
+    /* ==== Layout / Typo ==== */
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; display:grid; place-items:center;
+      background:var(--bg); color:var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    main{width:min(950px, 92vw); padding:24px}
+    h1{
+      margin:0 0 .25rem; line-height:1.2;
+      font-size:clamp(1.4rem, 1.2rem + 2.2vw, 2.4rem);
+      letter-spacing:.2px;
+    }
+    p.meta{margin:.25rem 0 1.25rem; color:var(--muted); font-size:.98rem}
+    .card{
+      background:var(--card); border:1px solid var(--card-border);
+      border-radius:var(--radius); padding:18px 16px 8px; backdrop-filter:blur(4px)
+    }
+
+    /* ==== Countdown ==== */
+    .timer{display:flex; align-items:center; justify-content:center; gap: clamp(10px, 2vw, 22px); margin:10px 0 6px}
+    .seg{
+      text-align:center; min-width: clamp(90px, 20vw, 160px);
+    }
+    .val{
+      font-variant-numeric: tabular-nums;
+      letter-spacing:.5px;
+      font-weight:800;
+      font-size: clamp(2.2rem, 7vw, 5.2rem);
+      line-height:1;
+    }
+    .label{
+      margin-top:.35rem; font-size: .95rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing:.06em;
+    }
+    .colon{
+      font-size: clamp(2rem, 6vw, 4.6rem);
+      translate: 0 -4px; user-select:none; color: var(--accent); opacity:.9
+    }
+
+    /* ==== Footer/Status ==== */
+    .status{margin:10px 6px 4px; color:var(--muted); text-align:center; font-size:.95rem}
+    .hint{margin-top:8px; text-align:center; opacity:.8; font-size:.9rem}
+
+    /* ==== Dark/Light Auto (optional) ==== */
+    @media (prefers-color-scheme: light){
+      :root{
+        --bg: #f7f7fb; --fg:#0b1220; --muted:#667085;
+        --card: #ffffff; --card-border:#e6e6ef; --accent:#0ea5e9;
+      }
+      .card{box-shadow:0 10px 30px rgba(2,6,23,.08)}
+    }
+
+    /* Kleine Bildschirme */
+    @media (max-width:420px){
+      .seg{min-width:auto}
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Verbleibende Zeit der Trump-Administration</h1>
+    <p class="meta">Zieldatum: 20. Januar 2029, 12:00 Uhr ET (Washington) = vorauss. 18:00 MEZ (Zürich).</p>
+
+    <section class="card">
+      <div class="timer" aria-live="polite" aria-label="Countdown">
+        <div class="seg">
+          <div id="d" class="val">—</div>
+          <div class="label">Tage</div>
+        </div>
+        <div class="colon">:</div>
+        <div class="seg">
+          <div id="h" class="val">—</div>
+          <div class="label">Stunden</div>
+        </div>
+        <div class="colon">:</div>
+        <div class="seg">
+          <div id="m" class="val">—</div>
+          <div class="label">Minuten</div>
+        </div>
+        <div class="colon">:</div>
+        <div class="seg">
+          <div id="s" class="val">—</div>
+          <div class="label">Sekunden</div>
+        </div>
+      </div>
+      <p id="status" class="status">Berechne …</p>
+      <p class="hint">Hinweis: Der Countdown berücksichtigt automatisch deine lokale Zeitzone.</p>
+    </section>
+  </main>
+
+  <script>
+    // Endzeit: 20 Jan 2029, 12:00 Eastern Time.
+    // In Januar gilt in den USA Standard Time (UTC-05:00), daher -05:00:
+    const END = new Date('2029-01-20T12:00:00-05:00');
+
+    const $ = id => document.getElementById(id);
+    const dEl = $('d'), hEl = $('h'), mEl = $('m'), sEl = $('s'), statusEl = $('status');
+
+    function pad(n){ return String(n).padStart(2,'0'); }
+
+    function tick(){
+      const now = new Date();
+      let diff = END - now;
+
+      if (diff <= 0){
+        dEl.textContent = '00';
+        hEl.textContent = '00';
+        mEl.textContent = '00';
+        sEl.textContent = '00';
+        statusEl.textContent = 'Die Amtszeit ist beendet.';
+        clearInterval(timer);
+        return;
+      }
+
+      const sec = Math.floor(diff / 1000);
+      const days = Math.floor(sec / 86400);
+      const hours = Math.floor((sec % 86400) / 3600);
+      const mins = Math.floor((sec % 3600) / 60);
+      const secs = sec % 60;
+
+      dEl.textContent = days.toString();
+      hEl.textContent = pad(hours);
+      mEl.textContent = pad(mins);
+      sEl.textContent = pad(secs);
+
+      // Präziser Status mit lokalem Zielzeitpunkt (für Nutzerklarheit)
+      const localTarget = new Intl.DateTimeFormat(undefined, {
+        dateStyle: 'full', timeStyle: 'short'
+      }).format(END);
+      statusEl.textContent = `Zeit bis ${localTarget}`;
+    }
+
+    // Erste Berechnung sofort, dann jede Sekunde
+    tick();
+    const timer = setInterval(tick, 1000);
+
+    // Verbesserte Akku-/Tab-Effizienz: bei Sichtbarkeitswechsel neu synchronisieren
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+  </script>
+</body>
+</html>
